@@ -60,6 +60,9 @@ const Post = props => {
   };
 
   //edit
+  const editPost = async () => {
+    setEditMode(!editMode);
+  };
 
   //delete
   const deleteCurrentPost = async () => {
@@ -113,9 +116,25 @@ const Post = props => {
     if (loginSelector.user.hasOwnProperty('user') || signinSelector.user.hasOwnProperty('user') || userState != null) {
       editButton = <button className="edit">Edit Post</button>;
     }
+
+    currentPost = (
+      <div className="single">
+        <img src={getPostSelector.post.cover} />
+        <h2>{getPostSelector.post.title}</h2>
+        <p>{getPostSelector.post.content}</p>
+
+        {editButton}
+        {updateForm}
+        {deleteButton}
+      </div>
+    );
   }
 
-  return <React.Fragment></React.Fragment>;
+  return (
+    <React.Fragment>
+      <p>{currentPost}</p>
+    </React.Fragment>
+  );
 };
 
 export default Post;
