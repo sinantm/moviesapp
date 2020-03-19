@@ -1,8 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Redirect } from 'react-router-dom';
+import { Container, Form, Grid, Image, Loader, Message } from 'semantic-ui-react';
 //actions
 import { getPost } from '../actions/getPost';
+import CommonButton from '../components/Buttons/CommonButton';
 import firebase from '../firebase/config';
 
 const Post = props => {
@@ -15,7 +17,15 @@ const Post = props => {
 
   const [defaultTitle, setDefaultTitle] = useState('');
   const [defaultContent, setDefaultContent] = useState('');
+  const [defaultDescription, setDefaultDescription] = useState('');
   const [fileref, setFileRef] = useState('');
+  const [defaultActors, setDefaultActors] = useState('');
+  const [defaultDirector, setDefaultDirector] = useState('');
+  const [defaultProduction, setDefaultProduction] = useState('');
+  const [defaultType, setDefaultType] = useState('');
+  const [defaultCategory, setDefaultCategory] = useState('');
+  const [defaultTime, setDefaultTime] = useState('');
+  const [defaultLanguage, setDefaultLanguage] = useState('');
 
   const [routeRedirect, setRedirect] = useState('');
   const [isBusy, setIsBusy] = useState(false);
@@ -23,6 +33,14 @@ const Post = props => {
   const titleRef = useRef(null);
   const contentRef = useRef(null);
   const fileRef = useRef(null);
+  const descriptionRef = useRef(null);
+  const actorsRef = useRef(null);
+  const directorRef = useRef(null);
+  const productionRef = useRef(null);
+  const typeRef = useRef(null);
+  const categoryRef = useRef(null);
+  const timeRef = useRef(null);
+  const languageRef = useRef(null);
 
   const [postid, setPostId] = useState('');
 
@@ -38,6 +56,7 @@ const Post = props => {
   let deleteButton;
 
   useEffect(() => {
+    setTimer(true);
     setPostId(props.match.params.id);
     getPostAction(props.match.params.id);
 
@@ -47,7 +66,7 @@ const Post = props => {
       }
     });
 
-    //setTimeout(() => setTimer(false,1000));
+    setTimeout(() => setTimer(false, 1000));
   }, []);
 
   const redirect = routeRedirect;
@@ -57,10 +76,46 @@ const Post = props => {
 
   const updateCurrentPost = async e => {
     e.preventDefault();
+    setIsBusy(true);
+
+    const post = {
+      id: postid,
+      title: titleRef.current.value,
+      content: contentRef.current.value,
+      description: descriptionRef.current.value,
+      actors: actorsRef.current.value,
+      director: directorRef.current.value,
+      production: productionRef.current.value,
+      type: typeRef.current.value,
+      category: categoryRef.current.value,
+      time: timeRef.current.value,
+      language: languageRef.current.value
+    };
+
+    if (fileRef.current.files.lenght > 0) {
+      post['cover'] = fileRef.current.files[0];
+      post['oldcover'] = getPostSelector.post.fileref;
+    }
+
+    await updatePostAction(postid, post);
+    setIsBusy(false);
+    setRedirect(true);
   };
 
   //edit
   const editPost = async () => {
+    setDefaultTitle(getPostSelector.post.title);
+    setDefaultContent(getPostSelector.post.content);
+    setFileRef(getPostSelector.post.fileref);
+    setDefaultDescription(getPostSelector.post.description);
+    setDefaultActors(getPostSelector.post.actors);
+    setDefaultDirector(getPostSelector.post.director);
+    setDefaultProduction(getPostSelector.post.production);
+    setDefaultType(getPostSelector.post.type);
+    setDefaultCategory(getPostSelector.post.category);
+    setDefaultTime(getPostSelector.post.time);
+    setDefaultLanguage(getPostSelector.post.language);
+
     setEditMode(!editMode);
   };
 
@@ -77,56 +132,115 @@ const Post = props => {
       (userState != null && isBusy === false)
     ) {
       deleteButton = (
-        <button className="delete" onClick={e => deleteCurrentPost()}>
-          Delete Post
-        </button>
+        <CommonButton name="Filmi Sil" icon="delete" type="submit" color="red" onClick={e => deleteCurrentPost()} />
       );
     }
     if (isBusy) {
       updateForm = (
         <div className="processing">
-          <p>Request is being processed</p>
-          <div className="loader">Loading..</div>
+          <p>İstek işleniyor</p>
+          <Loader active inline="centered" content="Loading" size="huge" />
         </div>
       );
     } else {
       updateForm = (
         <React.Fragment>
-          <form className="editForm" onSubmit={updateCurrentPost}>
-            <p>Update the current Post</p>
-            <label htmlFor="title">Post Title:</label>
-            <input type="text" name="title" onChange={e => setDefaultTitle(e.target.value)} />
-
-            <label htmlFor="content">Post Content:</label>
-            <textarea name="content" onChange={e => setDefaultContent(e.target.value)} />
-
-            <label htmlFor="cover" className="cover">
-              Cover:
-            </label>
-            <input type="file" onChange={e => setFileRef(e.target.value)} />
-          </form>
+          <Form style={{ marginTop: 20 }} onSubmit={updateCurrentPost}>
+            <Form.Field>
+              <label>Film Adı Güncelle</label>
+              <input type="text" name="title" defaultValue={defaultTitle} ref={titleRef} />
+            </Form.Field>
+            <Form.Field>
+              <label>İçerik Güncelle</label>
+              <input name="content" defaultValue={defaultContent} ref={contentRef} />
+            </Form.Field>
+            <Form.Field>
+              <label>Oyuncular</label>
+              <input name="actors" defaultValue={defaultActors} ref={actorsRef} />
+            </Form.Field>
+            <Form.Field>
+              <label>Yönetmen</label>
+              <input name="director" defaultValue={defaultDirector} ref={directorRef} />
+            </Form.Field>
+            <Form.Field>
+              <label>Yapım</label>
+              <input name="production" defaultValue={defaultProduction} ref={productionRef} />
+            </Form.Field>
+            <Form.Field>
+              <label>Tür</label>
+              <input name="type" defaultValue={defaultType} ref={typeRef} />
+            </Form.Field>
+            <Form.Field>
+              <label>Kategory</label>
+              <input name="category" defaultValue={defaultCategory} ref={categoryRef} />
+            </Form.Field>
+            <Form.Field>
+              <label>Süre</label>
+              <input name="time" defaultValue={defaultTime} ref={timeRef} />
+            </Form.Field>
+            <Form.Field>
+              <label>Dil</label>
+              <input name="language" defaultValue={defaultLanguage} ref={languageRef} />
+            </Form.Field>
+            <Form.Field>
+              <label htmlFor="cover">Fotoğraf Seç</label>
+              <input type="file" ref={fileRef} />
+            </Form.Field>
+            <Form.Field>
+              <label>Açıklama Güncelle</label>
+              <textarea name="content" defaultValue={defaultDescription} ref={descriptionRef} />
+            </Form.Field>
+            <CommonButton name="Güncelle" icon="save" type="submit" color="green" />
+          </Form>
         </React.Fragment>
       );
     }
   }
 
   if (timer) {
-    currentPost = <div className="loader">Loading..</div>;
+    currentPost = <Loader active inline="centered" content="Loading" size="huge" />;
   } else {
     if (loginSelector.user.hasOwnProperty('user') || signinSelector.user.hasOwnProperty('user') || userState != null) {
-      editButton = <button className="edit">Edit Post</button>;
+      editButton = <CommonButton name="Düzenle" icon="edit" type="submit" color="orange" onClick={e => editPost()} />;
     }
 
     currentPost = (
-      <div className="single">
-        <img src={getPostSelector.post.cover} />
-        <h2>{getPostSelector.post.title}</h2>
-        <p>{getPostSelector.post.content}</p>
-
-        {editButton}
-        {updateForm}
-        {deleteButton}
-      </div>
+      <Container>
+        <Grid divided="vertically">
+          <Grid.Row columns={2}>
+            <Grid.Column>
+              <Image src={getPostSelector.post.cover} fluid />
+            </Grid.Column>
+            <Grid.Column>
+              <Message info>
+                <Message.Header>Film Adı:</Message.Header>
+                <p>{getPostSelector.post.title}</p>
+                <Message.Header>İçerik:</Message.Header>
+                <p>{getPostSelector.post.content}</p>
+                <Message.Header>Oyuncular:</Message.Header>
+                <p>{getPostSelector.post.actors}</p>
+                <Message.Header>Yönetmen:</Message.Header>
+                <p>{getPostSelector.post.director}</p>
+                <Message.Header>Yapım:</Message.Header>
+                <p>{getPostSelector.post.production}</p>
+                <Message.Header>Tür:</Message.Header>
+                <p>{getPostSelector.post.type}</p>
+                <Message.Header>Kategory:</Message.Header>
+                <p>{getPostSelector.post.category}</p>
+                <Message.Header>Süre:</Message.Header>
+                <p>{getPostSelector.post.type}</p>
+                <Message.Header>Dil:</Message.Header>
+                <p>{getPostSelector.post.language}</p>
+                <Message.Header>Açıklama:</Message.Header>
+                <p style={{ marginBottom: 20 }}>{getPostSelector.post.description}</p>
+                {editButton}
+                {updateForm}
+                <div style={{ marginTop: 10 }}>{deleteButton}</div>
+              </Message>
+            </Grid.Column>
+          </Grid.Row>
+        </Grid>
+      </Container>
     );
   }
 

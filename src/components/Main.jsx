@@ -17,7 +17,7 @@ const Main = () => {
     <React.Fragment>
       <Container textAlign="justified">
         <div className="posts">
-          <Card.Group>
+          <Card.Group itemsPerRow={4}>
             {getPostsSelector.posts.map(post => {
               return (
                 <Card key={post.id}>

@@ -94,6 +94,14 @@ class Firebase {
     let newPost = {
       title: post.title,
       content: post.content,
+      description: post.description,
+      actors: post.actors,
+      director: post.director,
+      production: post.production,
+      type: post.type,
+      category: post.category,
+      time: post.time,
+      language: post.language,
       cover: downloadURL,
       fileref: fileRef
     };
@@ -112,8 +120,8 @@ class Firebase {
   async updatePost(postid, postData) {
     if (postData['cover']) {
       const storageRef = firebase.storage().ref();
-      const storageChild = storageRef.child(post.cover.name);
-      const postCover = await storageChild.put(post.cover);
+      const storageChild = storageRef.child(postData.cover.name);
+      const postCover = await storageChild.put(postData.cover);
       const downloadURL = await storageChild.getDownloadURL(); //url
       const fileRef = postCover.ref.location.path; // actual path
 
@@ -129,6 +137,14 @@ class Firebase {
       let updatePost = {
         title: postData.title,
         content: postData.content,
+        description: postData.description,
+        actors: postData.actors,
+        director: postData.director,
+        production: postData.production,
+        type: postData.type,
+        category: postData.category,
+        time: postData.time,
+        language: postData.language,
         cover: downloadURL,
         fileref: fileRef
       };
@@ -162,6 +178,7 @@ class Firebase {
       .delete()
       .catch(err => console.log(err));
     console.log('Image Deleted');
+
     const post = await firebase
       .firestore()
       .collection('posts')
